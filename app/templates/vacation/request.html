@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitar Férias{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Solicitar Férias</h2>
+            <p class="text-muted">Você tem {{ current_user.vacation_days }} dias de férias disponíveis.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form id="vacationForm">
+                        <div class="mb-3">
+                            <label for="start_date" class="form-label">Data Inicial</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="end_date" class="form-label">Data Final</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="justification" class="form-label">Justificativa (opcional)</label>
+                            <textarea class="form-control" id="justification" name="justification" rows="3"></textarea>
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            Você pode solicitar no máximo {{ max_vacation_days }} dias de férias por vez.
+                        </div>
+                        <button type="submit" class="btn btn-primary">Solicitar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('vacationForm');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+
+    // Definir data mínima como hoje
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.min = today;
+    endDateInput.min = today;
+
+    // Atualizar data mínima do fim quando a data inicial mudar
+    startDateInput.addEventListener('change', function() {
+        endDateInput.min = this.value;
+        if (endDateInput.value && endDateInput.value < this.value) {
+            endDateInput.value = this.value;
+        }
+    });
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        fetch('/vacation/request', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/vacation/history';
+            } else {
+                alert(data.message || 'Erro ao processar a solicitação');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erro ao processar a solicitação');
+        });
+    });
+});
+</script>
+{% endblock %}

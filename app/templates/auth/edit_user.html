@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuário{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Editar Usuário</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nome</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="department" class="form-label">Departamento</label>
+                    <select class="form-select" id="department" name="department" required>
+                        {% for dept in departments %}
+                        <option value="{{ dept }}" {% if dept == user.department %}selected{% endif %}>{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Função</label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>Usuário</option>
+                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Administrador</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="vacation_days" class="form-label">Dias de Férias Disponíveis</label>
+                    <input type="number" class="form-control" id="vacation_days" name="vacation_days" value="{{ user.vacation_days }}" min="0" max="30">
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Nova Senha (deixe em branco para manter a atual)</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <a href="{{ url_for('auth.list_users') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

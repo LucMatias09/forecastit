@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Funcionários{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Gerenciar Funcionários</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#employeeModal">
+            <i class="fas fa-user-plus me-2"></i>Novo Funcionário
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Departamento</th>
+                            <th>Cargo</th>
+                            <th>Dias de Férias</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr>
+                            <td>{{ employee.name }}</td>
+                            <td>{{ employee.email }}</td>
+                            <td>{{ employee.department }}</td>
+                            <td>{{ employee.role }}</td>
+                            <td>{{ employee.vacation_days }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info edit-employee" data-id="{{ employee.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-employee" data-id="{{ employee.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Funcionário -->
+<div class="modal fade" id="employeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Novo Funcionário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="employeeForm" method="POST">
+                    <input type="hidden" name="employee_id" id="employee_id">
+                    <div class="mb-3">
+                        <label class="form-label">Nome</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Senha</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Departamento</label>
+                        <select class="form-select" name="department" required>
+                            <option value="">Selecione...</option>
+                            <option value="TI">TI</option>
+                            <option value="RH">RH</option>
+                            <option value="Financeiro">Financeiro</option>
+                            <option value="Comercial">Comercial</option>
+                            <option value="Operações">Operações</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cargo</label>
+                        <select class="form-select" name="role" required>
+                            <option value="">Selecione...</option>
+                            <option value="employee">Funcionário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dias de Férias</label>
+                        <input type="number" class="form-control" name="vacation_days" value="30" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveEmployee">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const employeeForm = document.getElementById('employeeForm');
+    const saveButton = document.getElementById('saveEmployee');
+    const employeeModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+
+    // Salvar funcionário
+    saveButton.addEventListener('click', function() {
+        const formData = new FormData(employeeForm);
+        const employeeId = formData.get('employee_id');
+        const url = employeeId ? `/admin/employees/${employeeId}` : '/admin/employees';
+
+        fetch(url, {
+            method: employeeId ? 'PUT' : 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    });
+
+    // Editar funcionário
+    document.querySelectorAll('.edit-employee').forEach(button => {
+        button.addEventListener('click', function() {
+            const employeeId = this.dataset.id;
+            fetch(`/admin/employees/${employeeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    for (let field in data) {
+                        const input = employeeForm.elements[field];
+                        if (input) input.value = data[field];
+                    }
+                    document.querySelector('#employeeModal .modal-title').textContent = 'Editar Funcionário';
+                    employeeModal.show();
+                });
+        });
+    });
+
+    // Excluir funcionário
+    document.querySelectorAll('.delete-employee').forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Tem certeza que deseja excluir este funcionário?')) {
+                const employeeId = this.dataset.id;
+                fetch(`/admin/employees/${employeeId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            }
+        });
+    });
+
+    // Limpar formulário ao abrir modal para novo funcionário
+    document.querySelector('[data-bs-target="#employeeModal"]').addEventListener('click', function() {
+        employeeForm.reset();
+        employeeForm.elements['employee_id'].value = '';
+        document.querySelector('#employeeModal .modal-title').textContent = 'Novo Funcionário';
+    });
+});
+</script>
+{% endblock %}

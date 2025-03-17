@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico de Férias{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Histórico de Férias</h2>
+            {% if current_user.role != 'admin' %}
+            <p class="text-muted">Você tem {{ current_user.vacation_days }} dias de férias disponíveis.</p>
+            {% endif %}
+        </div>
+        {% if current_user.role != 'admin' %}
+        <div class="col-auto">
+            <a href="{{ url_for('vacation.request_vacation') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nova Solicitação
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            {% if current_user.role == 'admin' %}
+                            <th>Funcionário</th>
+                            {% endif %}
+                            <th>Período</th>
+                            <th>Dias</th>
+                            <th>Status</th>
+                            <th>Solicitado em</th>
+                            <th>Justificativa</th>
+                            <th>Resposta</th>
+                            <th>Respondido em</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# Criar um set para rastrear IDs já exibidos #}
+                        {% set shown_ids = [] %}
+                        {% for request in requests %}
+                            {% if request.id not in shown_ids %}
+                                {% set _ = shown_ids.append(request.id) %}
+                                <tr>
+                                    {% if current_user.role == 'admin' %}
+                                    <td>{{ request.requester.name }}</td>
+                                    {% endif %}
+                                    <td>
+                                        {{ request.start_date.strftime('%d/%m/%Y') }} - 
+                                        {{ request.end_date.strftime('%d/%m/%Y') }}
+                                    </td>
+                                    <td>{{ request.days_requested }}</td>
+                                    <td>
+                                        {% if request.status == 'pending' %}
+                                        <span class="badge bg-warning">Pendente</span>
+                                        {% elif request.status == 'approved' %}
+                                        <span class="badge bg-success">Aprovado</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Rejeitado</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ request.request_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if request.justification %}
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                data-bs-toggle="popover" 
+                                                data-bs-content="{{ request.justification }}">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if request.response_justification %}
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                data-bs-toggle="popover" 
+                                                data-bs-content="{{ request.response_justification }}">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if request.response_date %}
+                                        {{ request.response_date.strftime('%d/%m/%Y %H:%M') }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl)
+    })
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Início{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #2c3e50 0%, #e74c3c 100%);
+        color: white;
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('{{ url_for("static", filename="images/pattern.png") }}');
+        opacity: 0.1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .logo-text {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .logo-text span {
+        color: #e74c3c;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 30px;
+        transition: transform 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        color: #e74c3c;
+        margin-bottom: 20px;
+    }
+
+    .stats-section {
+        background-color: #f8f9fa;
+        padding: 80px 0;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 30px;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+
+    .cta-section {
+        background: linear-gradient(135deg, #e74c3c 0%, #2c3e50 100%);
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+    }
+
+    .btn-cta {
+        background-color: white;
+        color: #e74c3c;
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cta:hover {
+        background-color: #2c3e50;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .section-title {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .section-title h2 {
+        font-size: 2.5rem;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+
+    .section-title p {
+        color: #666;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center hero-content">
+            <div class="col-lg-6">
+                <h1 class="logo-text">FORECAST<span>IT</span></h1>
+                <h2 class="mb-4">Sistema de Gerenciamento de Férias</h2>
+                <p class="lead mb-4">
+                    Gerencie as férias dos seus funcionários de forma eficiente e organizada. 
+                    Automatize todo o processo de solicitação, aprovação e acompanhamento das férias 
+                    da sua equipe em uma única plataforma.
+                </p>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">Começar Agora</a>
+            </div>
+            <div class="col-lg-6">
+                <img src="{{ url_for('static', filename='images/hero-illustration.svg') }}" alt="Hero Illustration" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="section-title">
+            <h2>Recursos Principais</h2>
+            <p>Nossa solução completa para gestão de férias</p>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3>Solicitação Simplificada</h3>
+                    <p>Interface intuitiva para seus funcionários solicitarem férias com poucos cliques. Acompanhamento em tempo real do status das solicitações.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Gestão Eficiente</h3>
+                    <p>Painel administrativo completo para gerenciar todas as solicitações. Aprovações e rejeições com justificativas e notificações automáticas.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Controle Total</h3>
+                    <p>Visualize o calendário de férias da equipe, histórico completo de solicitações e relatórios detalhados para melhor planejamento.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

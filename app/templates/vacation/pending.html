@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitações Pendentes{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Solicitações Pendentes</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Data Inicial</th>
+                            <th>Data Final</th>
+                            <th>Dias</th>
+                            <th>Justificativa</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# Criar um set para rastrear IDs já exibidos #}
+                        {% set shown_ids = [] %}
+                        {% for request in pending_requests %}
+                            {% if request.id not in shown_ids %}
+                                {% set _ = shown_ids.append(request.id) %}
+                                <tr>
+                                    <td>{{ request.requester.name }}</td>
+                                    <td>{{ request.start_date.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ request.end_date.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ request.days_requested }}</td>
+                                    <td>{{ request.justification or '-' }}</td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm approve-btn" data-request-id="{{ request.id }}">
+                                            <i class="fas fa-check me-1"></i>Aprovar
+                                        </button>
+                                        <button class="btn btn-danger btn-sm reject-btn" data-request-id="{{ request.id }}">
+                                            <i class="fas fa-times me-1"></i>Rejeitar
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Justificativa -->
+<div class="modal fade" id="justificationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Justificativa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="justificationForm">
+                    <div class="mb-3">
+                        <label for="justification" class="form-label">Justificativa (opcional)</label>
+                        <textarea class="form-control" id="justification" name="justification" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmButton">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentRequestId = null;
+let currentAction = null;
+const modal = new bootstrap.Modal(document.getElementById('justificationModal'));
+
+document.querySelectorAll('.approve-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+        currentRequestId = this.dataset.requestId;
+        currentAction = 'approve';
+        modal.show();
+    });
+});
+
+document.querySelectorAll('.reject-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+        currentRequestId = this.dataset.requestId;
+        currentAction = 'reject';
+        modal.show();
+    });
+});
+
+document.getElementById('confirmButton').addEventListener('click', function() {
+    const justification = document.getElementById('justification').value;
+    handleRequest(currentRequestId, currentAction, justification);
+    modal.hide();
+});
+
+function handleRequest(requestId, action, justification) {
+    const url = action === 'approve' 
+        ? `/vacation/approve/${requestId}`
+        : `/vacation/reject/${requestId}`;
+    
+    const formData = new FormData();
+    formData.append('justification', justification);
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Erro ao processar a solicitação');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erro ao processar a solicitação');
+    });
+}
+</script>
+{% endblock %}

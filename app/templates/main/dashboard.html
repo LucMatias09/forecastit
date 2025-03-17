@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Dashboard</h2>
+        </div>
+    </div>
+
+    {% if current_user.role == 'admin' %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Usuários</h5>
+                    <p class="card-text">
+                        <i class="fas fa-users me-2"></i>
+                        <a href="{{ url_for('auth.list_users') }}" class="text-decoration-none">
+                            Gerenciar Usuários
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Solicitações</h5>
+                    <p class="card-text">
+                        <i class="fas fa-clock me-2"></i>
+                        <a href="{{ url_for('vacation.pending_requests') }}" class="text-decoration-none">
+                            Solicitações Pendentes
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Minhas Férias</h5>
+                    <p class="card-text">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Dias disponíveis: {{ current_user.vacation_days }}
+                    </p>
+                    <a href="{{ url_for('vacation.request_vacation') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Nova Solicitação
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Histórico</h5>
+                    <p class="card-text">
+                        <i class="fas fa-history me-2"></i>
+                        <a href="{{ url_for('vacation.vacation_history') }}" class="text-decoration-none">
+                            Ver Histórico de Férias
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-calendar me-2"></i>
+                        Calendário de Férias - {{ current_department }}
+                    </h5>
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/pt-br.js'></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar popovers
+    var popoverList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverList.forEach(function(el) {
+        new bootstrap.Popover(el, { trigger: 'hover' });
+    });
+
+    // Inicializar calendário
+    var calendarEl = document.getElementById('calendar');
+    if (!calendarEl) return;
+
+    var calendarConfig = {
+        locale: 'pt-br',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
+        },
+        events: {{ approved_vacation_events | tojson | safe }},
+        eventContent: function(info) {
+            return {
+                html: '<div class="fc-event-title"><i class="fas fa-umbrella-beach me-1"></i>' + info.event.title + '</div>'
+            };
+        },
+        eventDidMount: function(info) {
+            var event = info.event;
+            var props = event.extendedProps || {};
+            var tooltipTitle = event.title;
+            
+            if (props.department) {
+                tooltipTitle += '<br>Departamento: ' + props.department;
+            }
+            
+            if (props.status) {
+                tooltipTitle += '<br>Status: ' + props.status.charAt(0).toUpperCase() + props.status.slice(1);
+            }
+
+            new bootstrap.Tooltip(info.el, {
+                title: tooltipTitle,
+                placement: 'top',
+                trigger: 'hover',
+                container: 'body',
+                html: true
+            });
+        }
+    };
+
+    var calendar = new FullCalendar.Calendar(calendarEl, calendarConfig);
+    calendar.render();
+});
+</script>
+
+<style>
+#calendar {
+    max-width: 100%;
+    margin: 0 auto;
+    background: white;
+    padding: 15px;
+}
+
+.fc-event-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 5px;
+}
+
+.fc-event {
+    cursor: pointer;
+}
+
+.fc-daygrid-event {
+    white-space: normal;
+}
+
+.tooltip-inner {
+    max-width: 300px;
+    text-align: left;
+}
+</style>
+{% endblock %}

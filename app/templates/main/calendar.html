@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Calendário{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Calendário de Férias</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vacationModal">
+            <i class="fas fa-plus me-2"></i>Nova Solicitação
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Legenda</h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-success rounded-circle" style="width: 15px; height: 15px;"></div>
+                        <span class="ms-2">Aprovado</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-warning rounded-circle" style="width: 15px; height: 15px;"></div>
+                        <span class="ms-2">Pendente</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger rounded-circle" style="width: 15px; height: 15px;"></div>
+                        <span class="ms-2">Recusado</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Próximas Férias</h5>
+                    <div id="upcomingVacations">
+                        <p class="text-muted">Sem férias agendadas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Solicitação de Férias -->
+<div class="modal fade" id="vacationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nova Solicitação de Férias</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="vacationForm">
+                    <div class="mb-3">
+                        <label class="form-label">Data de Início</label>
+                        <input type="date" class="form-control" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Data de Fim</label>
+                        <input type="date" class="form-control" name="end_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observações</label>
+                        <textarea class="form-control" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="submitVacation">Solicitar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listMonth'
+        },
+        locale: 'pt',
+        height: 'auto',
+        selectable: true,
+        buttonText: {
+            today: 'Hoje',
+            month: 'Mês',
+            week: 'Semana',
+            list: 'Lista'
+        },
+        events: [], // Will be populated dynamically
+        select: function(info) {
+            document.querySelector('[name="start_date"]').value = info.startStr;
+            document.querySelector('[name="end_date"]').value = info.endStr;
+            new bootstrap.Modal(document.getElementById('vacationModal')).show();
+        }
+    });
+    calendar.render();
+
+    // Handle vacation request submission
+    document.getElementById('submitVacation').addEventListener('click', function() {
+        // Add vacation request handling logic here
+        const form = document.getElementById('vacationForm');
+        // Will be implemented in the next phase
+    });
+});
+</script>
+{% endblock %}

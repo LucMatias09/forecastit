@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Aprovações Pendentes{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Aprovações Pendentes</h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {% if pending_users %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Departamento</th>
+                            <th>Data de Registro</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in pending_users %}
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.department }}</td>
+                            <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-success approve-user" data-id="{{ user.id }}">
+                                    <i class="fas fa-check me-1"></i>Aprovar
+                                </button>
+                                <button class="btn btn-sm btn-danger reject-user" data-id="{{ user.id }}">
+                                    <i class="fas fa-times me-1"></i>Rejeitar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                <h5>Nenhuma aprovação pendente</h5>
+                <p class="text-muted">Não há novos registros de funcionários para aprovar.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aprovar usuário
+    document.querySelectorAll('.approve-user').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.id;
+            if (confirm('Deseja aprovar este funcionário?')) {
+                fetch(`/admin/approve/${userId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            }
+        });
+    });
+
+    // Rejeitar usuário
+    document.querySelectorAll('.reject-user').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.id;
+            if (confirm('Deseja rejeitar este funcionário? Esta ação não pode ser desfeita.')) {
+                fetch(`/admin/reject/${userId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
